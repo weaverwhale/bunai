@@ -1,0 +1,39 @@
+{
+  "name": "bunai",
+  "module": "src/index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "dev:debug": "bun --inspect=0.0.0.0:6499 --watch src/index.ts",
+    "start": "bun src/index.ts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@types/uuid": "^10.0.0",
+    "prettier": "^3.6.2"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^3.0.0-beta.54",
+    "@ai-sdk/react": "^3.0.0-beta.93",
+    "ai": "^6.0.0-beta.93",
+    "bun-plugin-tailwind": "^0.1.2",
+    "dotenv": "^16.4.7",
+    "katex": "^0.16.25",
+    "marked": "^16.4.1",
+    "marked-katex-extension": "^5.1.5",
+    "marked-react": "^3.0.2",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "tailwindcss": "^4.1.16",
+    "uuid": "^11.0.5",
+    "zod": "^3.24.1"
+  }
+}
