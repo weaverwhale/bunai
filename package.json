@@ -30,6 +30,7 @@
     "marked": "^16.4.1",
     "marked-katex-extension": "^5.1.5",
     "marked-react": "^3.0.2",
+    "playwright": "^1.49.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "tailwindcss": "^4.1.16",

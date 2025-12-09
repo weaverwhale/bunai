@@ -1,6 +1,6 @@
 import { ToolLoopAgent, stepCountIs } from 'ai';
 import { LLM_MODEL } from '../constants/providers';
-import { DEFAULT_SYSTEM_PROMPT } from '../constants/prompts';
+import { SYSTEM_PROMPT } from '../constants/prompts/system';
 import { tools } from '../tools';
 import { createProvider } from './providers';
 
@@ -9,9 +9,11 @@ let agentInstance: ReturnType<typeof createAgent> | null = null;
 function createAgent(provider: ReturnType<typeof createProvider>) {
   return new ToolLoopAgent({
     model: provider.chat(LLM_MODEL),
-    instructions: DEFAULT_SYSTEM_PROMPT,
+    instructions: SYSTEM_PROMPT,
     tools,
-    stopWhen: stepCountIs(20),
+    // Safety limit to prevent runaway loops
+    // Most queries need 1-3 tool calls, but complex multi-domain questions may need more
+    stopWhen: stepCountIs(10),
   });
 }
 
