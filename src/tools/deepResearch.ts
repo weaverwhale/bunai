@@ -38,7 +38,7 @@ export const deepResearch = tool({
       const cleanText = (text || '').replace(/<think>\s*<\/think>/g, '').trim();
 
       return (
-        `**Final Answer:**\n\n${cleanText}\n\n**Full Response:**\n\n${steps.join('\n')}` ||
+        `**Final Answer:**\n\n${cleanText}\n\n**Full Response:**\n\n${JSON.stringify(steps)}` ||
         'No response generated'
       );
     } catch (error) {
