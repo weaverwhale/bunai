@@ -2,7 +2,9 @@ import indexPageHtml from './frontend/index.html';
 import { agent } from './endpoints/agent';
 import { initializeAgent } from './utils/agent';
 
-console.log(`🚀 Starting bun server in "${process.env.NODE_ENV}" mode`);
+console.log(
+  `🚀 Starting bun server in ${process.env.NODE_ENV || 'development'} mode`
+);
 
 await initializeAgent();
 

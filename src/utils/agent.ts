@@ -23,7 +23,7 @@ export async function initializeAgent(): Promise<void> {
   }
 
   const provider = createProvider();
-  console.log('🕵️ Initializing AI Agent with LLM model:', LLM_MODEL);
+  console.log('🕵️  Initializing AI Agent with LLM model:', LLM_MODEL);
   agentInstance = createAgent(provider);
 }
 
