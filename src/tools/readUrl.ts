@@ -59,7 +59,7 @@ async function withTimeout<T>(
   fallbackMessage: string
 ): Promise<T | string> {
   let timeoutId: Timer;
-  const timeoutPromise = new Promise<string>((resolve) => {
+  const timeoutPromise = new Promise<string>(resolve => {
     timeoutId = setTimeout(() => resolve(fallbackMessage), ms);
   });
 
@@ -68,8 +68,10 @@ async function withTimeout<T>(
     clearTimeout(timeoutId!);
     return result;
   } catch (error) {
+    // Return fallback message on ANY error - never throw
     clearTimeout(timeoutId!);
-    throw error;
+    console.error('readUrl error:', error);
+    return fallbackMessage;
   }
 }
 
@@ -78,115 +80,113 @@ async function fetchUrlContent(url: string): Promise<string> {
   let page: Page | null = null;
 
   try {
-      // Launch headless browser
-      browser = await chromium.launch({
-        headless: true,
-      });
+    // Launch headless browser
+    browser = await chromium.launch({
+      headless: true,
+    });
 
-      // Create page with realistic user agent
-      page = await browser.newPage({
-        userAgent:
-          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      });
+    // Create page with realistic user agent
+    page = await browser.newPage({
+      userAgent:
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    });
 
-      // Navigate to the page
-      await page.goto(url, {
-        waitUntil: 'networkidle',
-        timeout: 30000,
-      });
+    // Navigate to the page
+    await page.goto(url, {
+      waitUntil: 'networkidle',
+      timeout: 30000,
+    });
 
-      // Wait for dynamic content to load
-      await page.waitForTimeout(2000);
+    // Wait for dynamic content to load
+    await page.waitForTimeout(2000);
 
-      // Extract title
-      const pageTitle = await page.title();
+    // Extract title
+    const pageTitle = await page.title();
 
-      // Get meta description if available
-      let description = '';
-      try {
-        const metaDesc = await page.$('meta[name="description"]');
-        if (metaDesc) {
-          description = (await metaDesc.getAttribute('content')) || '';
-        }
-      } catch {
-        // No description meta tag
+    // Get meta description if available
+    let description = '';
+    try {
+      const metaDesc = await page.$('meta[name="description"]');
+      if (metaDesc) {
+        description = (await metaDesc.getAttribute('content')) || '';
       }
-
-      // Remove non-content elements before extracting text
-      await page.evaluate((selectors: string[]) => {
-        selectors.forEach(selector => {
-          try {
-            const elements = document.querySelectorAll(selector);
-            elements.forEach(el => el.remove());
-          } catch {
-            // Selector might not be valid, skip it
-          }
-        });
-      }, SELECTORS_TO_REMOVE);
-
-      // Get cleaned body text
-      const mainText = (await page.innerText('body'))
-        .replace(/\n{3,}/g, '\n\n') // Max 2 consecutive newlines
-        .replace(/[ \t]+/g, ' ') // Multiple spaces to single space
-        .replace(/^\s+|\s+$/gm, '') // Trim each line
-        .trim();
-
-      if (!mainText || mainText.length === 0) {
-        return 'No readable content found on this page.';
-      }
-
-      // Truncate if too long
-      const maxLength = 12000;
-      const truncated = mainText.length > maxLength;
-      const content = truncated
-        ? mainText.slice(0, maxLength) + '...'
-        : mainText;
-
-      // Build output
-      let output = `## ${pageTitle || 'Untitled Page'}\n`;
-      output += `**URL:** ${url}\n`;
-      if (description) {
-        output += `**Description:** ${description}\n`;
-      }
-      output += `\n---\n\n${content}`;
-      if (truncated) {
-        output += `\n\n*[Content truncated from ${mainText.length} to ${maxLength} characters]*`;
-      }
-
-      return output;
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      const errorName = error instanceof Error ? error.name : '';
-      const lowerMsg = errorMsg.toLowerCase();
-
-      // Provide helpful error messages - always return a string, never throw
-      if (
-        errorName === 'TimeoutError' ||
-        lowerMsg.includes('timeout') ||
-        lowerMsg.includes('timed out')
-      ) {
-        return `Timeout: Page "${url}" took too long to load. Skipping and continuing research.`;
-      }
-      if (lowerMsg.includes('err_name_not_resolved')) {
-        return `Could not resolve domain for "${url}". Skipping and continuing research.`;
-      }
-      if (lowerMsg.includes('err_connection_refused')) {
-        return `Connection refused for "${url}". Skipping and continuing research.`;
-      }
-      if (lowerMsg.includes('err_connection_reset')) {
-        return `Connection reset for "${url}". Skipping and continuing research.`;
-      }
-
-      return `Could not read "${url}": ${errorMsg}. Continuing research.`;
-    } finally {
-      // Clean up browser resources
-      if (page) {
-        await page.close().catch(() => {});
-      }
-      if (browser) {
-        await browser.close().catch(() => {});
-      }
+    } catch {
+      // No description meta tag
     }
+
+    // Remove non-content elements before extracting text
+    await page.evaluate((selectors: string[]) => {
+      selectors.forEach(selector => {
+        try {
+          const elements = document.querySelectorAll(selector);
+          elements.forEach(el => el.remove());
+        } catch {
+          // Selector might not be valid, skip it
+        }
+      });
+    }, SELECTORS_TO_REMOVE);
+
+    // Get cleaned body text
+    const mainText = (await page.innerText('body'))
+      .replace(/\n{3,}/g, '\n\n') // Max 2 consecutive newlines
+      .replace(/[ \t]+/g, ' ') // Multiple spaces to single space
+      .replace(/^\s+|\s+$/gm, '') // Trim each line
+      .trim();
+
+    if (!mainText || mainText.length === 0) {
+      return 'No readable content found on this page.';
+    }
+
+    // Truncate if too long
+    const maxLength = 12000;
+    const truncated = mainText.length > maxLength;
+    const content = truncated ? mainText.slice(0, maxLength) + '...' : mainText;
+
+    // Build output
+    let output = `## ${pageTitle || 'Untitled Page'}\n`;
+    output += `**URL:** ${url}\n`;
+    if (description) {
+      output += `**Description:** ${description}\n`;
+    }
+    output += `\n---\n\n${content}`;
+    if (truncated) {
+      output += `\n\n*[Content truncated from ${mainText.length} to ${maxLength} characters]*`;
+    }
+
+    return output;
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    const errorName = error instanceof Error ? error.name : '';
+    const lowerMsg = errorMsg.toLowerCase();
+
+    // Provide helpful error messages - always return a string, never throw
+    if (
+      errorName === 'TimeoutError' ||
+      lowerMsg.includes('timeout') ||
+      lowerMsg.includes('timed out')
+    ) {
+      return `Timeout: Page "${url}" took too long to load. Skipping and continuing research.`;
+    }
+    if (lowerMsg.includes('err_name_not_resolved')) {
+      return `Could not resolve domain for "${url}". Skipping and continuing research.`;
+    }
+    if (lowerMsg.includes('err_connection_refused')) {
+      return `Connection refused for "${url}". Skipping and continuing research.`;
+    }
+    if (lowerMsg.includes('err_connection_reset')) {
+      return `Connection reset for "${url}". Skipping and continuing research.`;
+    }
+
+    return `Could not read "${url}": ${errorMsg}. Continuing research.`;
+  } finally {
+    // Clean up browser resources
+    if (page) {
+      await page.close().catch(() => {});
+    }
+    if (browser) {
+      await browser.close().catch(() => {});
+    }
+  }
 }
 
 export const readUrl = tool({

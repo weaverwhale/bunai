@@ -1,6 +1,6 @@
 // AI SDK Models
 export const LLM_MODEL = process.env.LLM_MODEL || 'qwen3-1.7b';
-export const WEB_SEARCH_MODEL = process.env.SEARCH_MODEL || 'gpt-5-mini';
+export const WEB_SEARCH_MODEL = process.env.SEARCH_MODEL || 'gpt-4.1-mini';
 
 // AI SDK Configuration (LMStudio/OpenAI/etc)
 export const AI_BASE_URL =

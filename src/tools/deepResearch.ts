@@ -5,6 +5,25 @@ import { createProvider } from '../utils/providers';
 import { LLM_MODEL } from '../constants/providers';
 import { DEEP_RESEARCH_SYSTEM_PROMPT } from '../constants/prompts/deepResearch';
 
+// Extract tool results from steps to compile research findings
+function extractToolResults(steps: any[]): string {
+  const results: string[] = [];
+
+  for (const step of steps) {
+    if (!step.toolResults) continue;
+
+    for (const toolResult of step.toolResults) {
+      if (toolResult.result && typeof toolResult.result === 'string') {
+        results.push(`### ${toolResult.toolName}\n${toolResult.result}`);
+      } else if (toolResult.result?.value) {
+        results.push(`### ${toolResult.toolName}\n${toolResult.result.value}`);
+      }
+    }
+  }
+
+  return results.join('\n\n---\n\n');
+}
+
 export const deepResearch = tool({
   description:
     'Spawn a sub-agent that performs deep, thorough research on a complex topic. Use this for questions requiring multiple searches, cross-referencing, or detailed analysis. The sub-agent can make multiple tool calls to gather comprehensive information.',
@@ -31,14 +50,14 @@ export const deepResearch = tool({
         system: `${DEEP_RESEARCH_SYSTEM_PROMPT}\n\n${context}`,
         prompt: task,
         tools: deepResearchTools,
-        stopWhen: stepCountIs(10),
+        stopWhen: stepCountIs(5),
+        onStepFinish: step => {},
       });
 
       const { text, steps } = result;
-      const cleanText = (text || '').replace(/<think>\s*<\/think>/g, '').trim();
 
       return (
-        `**Final Answer:**\n\n${cleanText}\n\n**Full Response:**\n\n${JSON.stringify(steps)}` ||
+        `**Final Answer:**\n\n${text}\n\n**Full Response:**\n\n${JSON.stringify(steps)}` ||
         'No response generated'
       );
     } catch (error) {
