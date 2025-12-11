@@ -2,7 +2,7 @@ import { tool, generateText, stepCountIs } from 'ai';
 import { z } from 'zod';
 import { deepResearchTools } from '.';
 import { createProvider } from '../utils/providers';
-import { LLM_MODEL } from '../constants/providers';
+import { DEEP_RESEARCH_MODEL } from '../constants/providers';
 import { DEEP_RESEARCH_SYSTEM_PROMPT } from '../constants/prompts/deepResearch';
 
 // Extract tool results from steps to compile research findings
@@ -46,7 +46,7 @@ export const deepResearch = tool({
     try {
       // Use generateText with tools for multi-step agentic execution
       const result = await generateText({
-        model: provider.chat(LLM_MODEL),
+        model: provider.chat(DEEP_RESEARCH_MODEL),
         system: `${DEEP_RESEARCH_SYSTEM_PROMPT}\n\n${context}`,
         prompt: task,
         tools: deepResearchTools,
