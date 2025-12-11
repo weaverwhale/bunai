@@ -55,10 +55,28 @@ export const deepResearch = tool({
       });
 
       const { text, steps } = result;
-      const formattedText = text.replace(/<think>\s*<\/think>/g, '').trim();
-      const formattedSteps = steps.map(step => step.text.slice(0, 1000));
 
-      return `**Final Answer:**\n\n${formattedText}\n\n**Response Steps:**\n\n${JSON.stringify(formattedSteps)}`;
+      // Strip ALL think blocks and orphan tags
+      const stripThinking = (str: string) =>
+        str
+          .replace(/<think>[\s\S]*?<\/think>/g, '')
+          .replace(/<\/?think>/g, '')
+          .trim();
+
+      const formattedText = stripThinking(text);
+
+      // If we got a final answer, return it
+      if (formattedText) {
+        return `**Research Complete:**\n\n${formattedText}`;
+      }
+
+      // Otherwise, extract useful content from tool results
+      const toolResults = extractToolResults(steps);
+      if (toolResults) {
+        return `**Research Findings:**\n\n${toolResults}`;
+      }
+
+      return 'Research completed but no summary was generated.';
     } catch (error) {
       console.error('Deep research error:', error);
       return `Deep research encountered an error: ${error instanceof Error ? error.message : String(error)}`;

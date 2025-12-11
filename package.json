@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "bun --watch src/index.ts",
-    "dev:debug": "bun --inspect=0.0.0.0:6499 --watch src/index.ts",
+    "dev:debug": "bun --inspect --watch src/index.ts",
     "start": "bun src/index.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
