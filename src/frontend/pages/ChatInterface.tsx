@@ -1,14 +1,14 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
-import { Messages } from './messages/Messages';
+import { Messages } from '../components/messages/Messages';
 import { STARTER_QUESTIONS } from '../../constants/questions';
-import { ThemeToggle } from './ThemeToggle';
-import { ChatInput } from './ChatInput';
+import { ThemeToggle } from '../components/ThemeToggle';
+import { ChatInput } from '../components/ChatInput';
+import { useAutoScroll } from '../hooks/useAutoScroll';
 
 export function ChatInterface() {
   const [input, setInput] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Use the AI SDK's useChat hook
   const { messages, sendMessage, setMessages, status } = useChat({
@@ -17,15 +17,10 @@ export function ChatInterface() {
     }),
   });
 
+  const { scrollEndRef, scrollContainerRef, handleScroll, enableAutoScroll } =
+    useAutoScroll(messages);
+
   const isProcessing = status !== 'ready';
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,6 +28,7 @@ export function ChatInterface() {
 
     const messageContent = input;
     setInput('');
+    enableAutoScroll();
 
     sendMessage({
       role: 'user',
@@ -42,6 +38,8 @@ export function ChatInterface() {
 
   const handleStarterQuestion = async (question: string) => {
     if (isProcessing) return;
+
+    enableAutoScroll();
 
     sendMessage({
       role: 'user',
@@ -79,7 +77,11 @@ export function ChatInterface() {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto">
+      <div
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto"
+      >
         <div className="flex flex-col max-w-3xl mx-auto px-4">
           <Messages
             messages={messages}
@@ -87,7 +89,7 @@ export function ChatInterface() {
             starterQuestions={STARTER_QUESTIONS}
             onStarterQuestion={handleStarterQuestion}
           />
-          <div ref={messagesEndRef} />
+          <div ref={scrollEndRef} />
         </div>
       </div>
 

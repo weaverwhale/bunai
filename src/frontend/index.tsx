@@ -1,6 +1,6 @@
 import { createRoot } from 'react-dom/client';
-import { ChatInterface } from './components/ChatInterface';
+import { ChatInterface } from './pages/ChatInterface';
 import './styles.css';
 
-const root = createRoot(document.getElementById('root')!);
+const root = createRoot(document.getElementById('root') as HTMLElement);
 root.render(<ChatInterface />);
