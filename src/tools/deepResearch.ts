@@ -55,11 +55,10 @@ export const deepResearch = tool({
       });
 
       const { text, steps } = result;
+      const formattedText = text.replace(/<think>\s*<\/think>/g, '').trim();
+      const formattedSteps = steps.map(step => step.text.slice(0, 1000));
 
-      return (
-        `**Final Answer:**\n\n${text}\n\n**Full Response:**\n\n${JSON.stringify(steps)}` ||
-        'No response generated'
-      );
+      return `**Final Answer:**\n\n${formattedText}\n\n**Response Steps:**\n\n${JSON.stringify(formattedSteps)}`;
     } catch (error) {
       console.error('Deep research error:', error);
       return `Deep research encountered an error: ${error instanceof Error ? error.message : String(error)}`;
