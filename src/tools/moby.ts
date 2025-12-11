@@ -45,7 +45,7 @@ export const moby = tool({
       });
 
       if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}`);
+        return `Error: Could not fetch response from Triple Whale. ${response.statusText}`;
       }
 
       const data = await response.json();

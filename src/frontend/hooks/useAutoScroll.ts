@@ -1,6 +1,6 @@
 import { useRef, useEffect, useCallback } from 'react';
 
-const AUTO_SCROLL_THRESHOLD = 2;
+const AUTO_SCROLL_THRESHOLD = 50;
 
 export function useAutoScroll<T>(dependency: T) {
   const scrollEndRef = useRef<HTMLDivElement>(null);
